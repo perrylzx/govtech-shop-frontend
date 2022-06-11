@@ -46,26 +46,26 @@ const Input = styled(BaseInput)`
   margin-bottom: 10px;
 `;
 
-const fetcher = async (key) => {
-  return axios(key);
-};
-
 const Landing = () => {
   const [items, setItems] = useState([]);
   const [itemCount, setItemCount] = useState(0);
   const [postItemModalOpen, setPostItemModalOpen] = useState(false);
   const [postItemData, setPostItemData] = useState({ name: '', price: 0 });
-  const { data, mutate, isValidating } = useSWR('http://localhost:80/items', fetcher);
+  const {
+    data: getItemsResponse,
+    mutate,
+    isValidating
+  } = useSWR('http://localhost:80/items', async (key) => await axios(key));
 
   const { Search } = Input;
 
   useEffect(() => {
-    if (data) {
-      const { items, itemCount } = data.data;
+    if (getItemsResponse) {
+      const { items, itemCount } = getItemsResponse.data;
       setItemCount(itemCount);
       setItems(items);
     }
-  }, [data]);
+  }, [getItemsResponse]);
 
   const handlePostItemDataChange = (dataName, value) => {
     setPostItemData({ ...postItemData, [dataName]: value });
@@ -107,13 +107,15 @@ const Landing = () => {
         <>
           <YourShop>Your shop</YourShop>
           <SearchAndPostItemContainer>
-            <Button onClick={() => setPostItemModalOpen(true)} type="primary" size="large">
-              Post Item
-            </Button>
-            {isValidating && <Spin />}
+            <>
+              <Button onClick={() => setPostItemModalOpen(true)} type="primary" size="large">
+                Post Item
+              </Button>
+              {isValidating && <Spin />}
+            </>
             <Search placeholder="Search Item" allowClear enterButton size="large" />
           </SearchAndPostItemContainer>
-          {!isEmpty(items) && <ItemList items={items} />}
+          {!isEmpty(items) && <ItemList itemCount={itemCount} items={items} />}
         </>
       </ShopContentContainer>
     </>
