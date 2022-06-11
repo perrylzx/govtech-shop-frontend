@@ -1,0 +1,15 @@
+{
+  "short_name": "Govtech shop",
+  "name": "Govtech shop",
+  "icons": [
+    {
+      "src": "smugpug",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
