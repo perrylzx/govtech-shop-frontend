@@ -3,9 +3,11 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { isEmpty } from 'lodash';
 import ItemList from '../components/ItemList';
-import { Input as BaseInput, Button as BaseButton, Modal, InputNumber, Spin } from 'antd';
+import { Input as BaseInput, Button as BaseButton, Modal, InputNumber, Spin, Alert } from 'antd';
 import useSWR from 'swr';
 import 'antd/dist/antd.css';
+import { ItemPriceMax, ItemTitleMaxLength } from '../contants';
+import { validatePostData } from '../common/validate';
 
 const BackgroundBanner = styled.div`
   background: #1fc76a;
@@ -50,12 +52,15 @@ const Landing = () => {
   const [items, setItems] = useState([]);
   const [itemCount, setItemCount] = useState(0);
   const [postItemModalOpen, setPostItemModalOpen] = useState(false);
+  const [postValidateErrors, setPostValidateErrors] = useState(null);
   const [postItemData, setPostItemData] = useState({ name: '', price: 0 });
   const {
     data: getItemsResponse,
     mutate,
     isValidating
-  } = useSWR('http://localhost:80/items', async (key) => await axios(key));
+  } = useSWR('http://localhost:80/items', async (key) => await axios(key), {
+    revalidateOnFocus: false
+  });
 
   const { Search } = Input;
 
@@ -69,10 +74,15 @@ const Landing = () => {
 
   const handlePostItemDataChange = (dataName, value) => {
     setPostItemData({ ...postItemData, [dataName]: value });
+    setPostValidateErrors(null);
   };
 
   const handleOnPostItemClick = async () => {
-    await axios.post('http://localhost:80/items', postItemData);
+    const validatedPostData = await validatePostData(postItemData);
+    setPostValidateErrors(validatedPostData);
+    if (!postValidateErrors) {
+      await axios.post('http://localhost:80/items', postItemData);
+    }
   };
 
   return (
@@ -87,15 +97,21 @@ const Landing = () => {
           mutate();
         }}
         onCancel={() => setPostItemModalOpen(false)}>
+        {postValidateErrors && (
+          <Alert closable={true} message={postValidateErrors.message} type="error" />
+        )}
+
         <h4>Name:</h4>
         <Input
           value={postItemData.name}
+          maxLength={ItemTitleMaxLength}
           onChange={(e) => handlePostItemDataChange('name', e.target.value)}
           placeholder="Name"
         />
         <h4>Price:</h4>
         <InputNumber
           step={10}
+          max={ItemPriceMax}
           min={0}
           value={postItemData.price}
           onChange={(e) => handlePostItemDataChange('price', e)}

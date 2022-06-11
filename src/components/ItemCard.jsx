@@ -1,9 +1,11 @@
 import styled from 'styled-components';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button as BaseButton, Input, InputNumber } from 'antd';
+import { Alert, Button as BaseButton, Input, InputNumber } from 'antd';
 import axios from 'axios';
 import useSWR from 'swr';
+import { ItemPriceMax, ItemTitleMaxLength } from '../contants';
+import { validatePutData } from '../common/validate';
 
 const ItemCardContainer = styled.div`
   display: flex;
@@ -39,7 +41,7 @@ const ButtonContainer = styled.div`
 const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
-  & > input:first-child {
+  & > *:not(:last-child) {
     margin-bottom: 7px;
   }
 `;
@@ -50,6 +52,7 @@ const ItemDataContainer = styled.div`
 
 const ItemCard = ({ item }) => {
   const [deletePromptOpen, setDeletePromptOpen] = useState(false);
+  const [validateErrors, setValidateErrors] = useState(null);
   const [updateItemData, setUpdateItemData] = useState({
     id: item.id,
     name: item.name,
@@ -63,7 +66,11 @@ const ItemCard = ({ item }) => {
       setIsUpdatingItem(true);
       return;
     }
-    await axios.put('http://localhost:80/items', updateItemData);
+    const validatedPutData = await validatePutData(updateItemData);
+    setValidateErrors(validatedPutData);
+    if (!validateErrors) {
+      await axios.put('http://localhost:80/items', updateItemData);
+    }
     mutate();
     setIsUpdatingItem(false);
   };
@@ -80,6 +87,7 @@ const ItemCard = ({ item }) => {
 
   const handleUpdateItemDataChange = (itemProperty, value) => {
     setUpdateItemData({ ...updateItemData, [itemProperty]: value });
+    setValidateErrors(null);
   };
 
   return (
@@ -88,7 +96,11 @@ const ItemCard = ({ item }) => {
       <ItemDataContainer>
         {isUpdatingItem ? (
           <InputContainer>
+            {validateErrors && (
+              <Alert closable={true} message={validateErrors.message} type="error" />
+            )}
             <Input
+              maxLength={ItemTitleMaxLength}
               defaultValue={item.name}
               onChange={(e) => handleUpdateItemDataChange('name', e.target.value)}
               placeholder="Name"
@@ -97,6 +109,7 @@ const ItemCard = ({ item }) => {
               step={10}
               min={0}
               defaultValue={item.price}
+              max={ItemPriceMax}
               onChange={(value) => handleUpdateItemDataChange('price', value)}
               placeholder="Price"
             />

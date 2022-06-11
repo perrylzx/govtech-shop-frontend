@@ -17,7 +17,7 @@ const ItemList = ({ items, itemCount }) => {
       <ItemCount>{`${itemCount} items`}</ItemCount>
       <ItemListContainer>
         {items.map((item) => {
-          if (!item.price || !item.name) {
+          if (!item.name) {
             return;
           }
           return <ItemCard key={item.id} item={item} />;
