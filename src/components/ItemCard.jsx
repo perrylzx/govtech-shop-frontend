@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button as BaseButton } from 'antd';
+import { Button as BaseButton, Input, InputNumber } from 'antd';
 import axios from 'axios';
 import useSWR from 'swr';
 
@@ -36,9 +36,37 @@ const ButtonContainer = styled.div`
   display: flex;
 `;
 
+const InputContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  & > input:first-child {
+    margin-bottom: 7px;
+  }
+`;
+
+const ItemDataContainer = styled.div`
+  margin-bottom: 10px;
+`;
+
 const ItemCard = ({ item }) => {
   const [deletePromptOpen, setDeletePromptOpen] = useState(false);
+  const [updateItemData, setUpdateItemData] = useState({
+    id: item.id,
+    name: item.name,
+    price: item.price
+  });
+  const [isUpdatingItem, setIsUpdatingItem] = useState(false);
   const { mutate } = useSWR('http://localhost:80/items');
+
+  const handleUpdateItem = async () => {
+    if (!isUpdatingItem) {
+      setIsUpdatingItem(true);
+      return;
+    }
+    await axios.put('http://localhost:80/items', updateItemData);
+    mutate();
+    setIsUpdatingItem(false);
+  };
 
   const handleDeleteItem = async () => {
     if (!deletePromptOpen) {
@@ -50,21 +78,61 @@ const ItemCard = ({ item }) => {
     setDeletePromptOpen(false);
   };
 
+  const handleUpdateItemDataChange = (itemProperty, value) => {
+    setUpdateItemData({ ...updateItemData, [itemProperty]: value });
+  };
+
   return (
     <ItemCardContainer onMouseLeave={() => setDeletePromptOpen(false)} key={item.id}>
       <ItemId>{item.id}</ItemId>
-      <ItemName>{item.name}</ItemName>
-      <ItemPrice>{`$${item.price.toLocaleString()}`}</ItemPrice>
+      <ItemDataContainer>
+        {isUpdatingItem ? (
+          <InputContainer>
+            <Input
+              defaultValue={item.name}
+              onChange={(e) => handleUpdateItemDataChange('name', e.target.value)}
+              placeholder="Name"
+            />
+            <InputNumber
+              step={10}
+              min={0}
+              defaultValue={item.price}
+              onChange={(value) => handleUpdateItemDataChange('price', value)}
+              placeholder="Price"
+            />
+          </InputContainer>
+        ) : (
+          <>
+            <ItemName>{item.name}</ItemName>
+            <ItemPrice>{`$${item.price.toLocaleString()}`}</ItemPrice>
+          </>
+        )}
+      </ItemDataContainer>
       <ButtonContainer>
-        {!deletePromptOpen && <Button type="primary">Update Item</Button>}
-        <Button
-          onClick={() => {
-            handleDeleteItem();
-          }}
-          type="primary"
-          danger>
-          {deletePromptOpen ? 'Confirm' : 'Delete Item'}
-        </Button>
+        {!deletePromptOpen && (
+          <Button onClick={() => handleUpdateItem()} type="primary">
+            Update Item
+          </Button>
+        )}
+        {isUpdatingItem ? (
+          <Button
+            onClick={() => {
+              setIsUpdatingItem(false);
+            }}
+            type="primary"
+            danger>
+            {'Cancel'}
+          </Button>
+        ) : (
+          <Button
+            onClick={() => {
+              handleDeleteItem();
+            }}
+            type="primary"
+            danger>
+            {deletePromptOpen ? 'Confirm' : 'Delete Item'}
+          </Button>
+        )}
       </ButtonContainer>
     </ItemCardContainer>
   );
