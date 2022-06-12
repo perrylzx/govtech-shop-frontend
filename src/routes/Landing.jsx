@@ -8,6 +8,7 @@ import useSWR from 'swr';
 import 'antd/dist/antd.css';
 import { ItemPriceMax, ItemTitleMaxLength } from '../contants';
 import { validatePostData } from '../common/validate';
+import QueryItems from '../components/QueryItems';
 
 const BackgroundBanner = styled.div`
   background: #1fc76a;
@@ -30,14 +31,6 @@ const YourShop = styled.h1`
   color: white;
 `;
 
-const SearchAndPostItemContainer = styled.div`
-  background: white;
-  height: 235px;
-  border-radius: 13px;
-  margin-bottom: 64px;
-  padding: 26px;
-`;
-
 const Button = styled(BaseButton)`
   border: 0;
   border-radius: 8px;
@@ -54,15 +47,21 @@ const Landing = () => {
   const [postItemModalOpen, setPostItemModalOpen] = useState(false);
   const [postValidateErrors, setPostValidateErrors] = useState(null);
   const [postItemData, setPostItemData] = useState({ name: '', price: 0 });
+  const [filterData, setFilterData] = useState({});
+
   const {
     data: getItemsResponse,
     mutate,
     isValidating
-  } = useSWR('http://localhost:80/items', async (key) => await axios(key), {
-    revalidateOnFocus: false
-  });
-
-  const { Search } = Input;
+  } = useSWR(
+    'http://localhost:80/items',
+    async (key) => {
+      return await axios({ url: key, ...(!isEmpty(filterData) && { params: filterData }) });
+    },
+    {
+      revalidateOnFocus: false
+    }
+  );
 
   useEffect(() => {
     if (getItemsResponse) {
@@ -122,15 +121,13 @@ const Landing = () => {
       <ShopContentContainer>
         <>
           <YourShop>Your shop</YourShop>
-          <SearchAndPostItemContainer>
-            <>
-              <Button onClick={() => setPostItemModalOpen(true)} type="primary" size="large">
-                Post Item
-              </Button>
-              {isValidating && <Spin />}
-            </>
-            <Search placeholder="Search Item" allowClear enterButton size="large" />
-          </SearchAndPostItemContainer>
+          <QueryItems filterData={filterData} setFilterData={setFilterData} mutate={mutate} />
+          <>
+            <Button onClick={() => setPostItemModalOpen(true)} type="primary" size="large">
+              Post Item
+            </Button>
+            {isValidating && <Spin />}
+          </>
           {!isEmpty(items) && <ItemList itemCount={itemCount} items={items} />}
         </>
       </ShopContentContainer>
