@@ -13,22 +13,32 @@ const ItemCardContainer = styled.div`
   padding: 15px;
   background: white;
   border-radius: 8px;
+  border: 1px solid #cbcbcb;
 `;
 
 const ItemId = styled.h3`
-  font-size: 9px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
   margin-bottom: 17px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #cbcbcb;
+`;
+
+const UpdatedAt = styled.h4`
+  font-size: 0.7rem;
+  margin-bottom: 0;
 `;
 
 const ItemName = styled.h3`
-  font-size: 14px;
+  font-size: 1.2rem;
+  font-weight: bold;
 `;
 const ItemPrice = styled.h3`
-  font-size: 14px;
+  font-size: 1rem;
 `;
 
 const Button = styled(BaseButton).attrs({ size: 'small' })`
-  border: 0;
+  border: 1px solid #cbcbcb;
   background: #1fc76a;
   border-radius: 3px;
   margin-right: 5px;
@@ -36,6 +46,9 @@ const Button = styled(BaseButton).attrs({ size: 'small' })`
 
 const ButtonContainer = styled.div`
   display: flex;
+  border-bottom: 1px solid #cbcbcb;
+  padding-bottom: 10px;
+  margin-bottom: 5px;
 `;
 
 const InputContainer = styled.div`
@@ -48,6 +61,10 @@ const InputContainer = styled.div`
 
 const ItemDataContainer = styled.div`
   margin-bottom: 10px;
+`;
+
+const ItemUpdatedTimeContainer = styled.div`
+  display: flex;
 `;
 
 const ItemCard = ({ item }) => {
@@ -147,6 +164,9 @@ const ItemCard = ({ item }) => {
           </Button>
         )}
       </ButtonContainer>
+      <ItemUpdatedTimeContainer>
+        <UpdatedAt>{`Updated at: ${new Date(item.updatedAt).toLocaleDateString([])}`}</UpdatedAt>
+      </ItemUpdatedTimeContainer>
     </ItemCardContainer>
   );
 };

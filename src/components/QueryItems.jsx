@@ -12,6 +12,7 @@ const QueryItemsContainer = styled.div`
   border-radius: 13px;
   margin-bottom: 64px;
   padding: 26px;
+  border: 1px solid #cbcbcb;
 `;
 const Input = styled(BaseInput)`
   margin-bottom: 10px;
