@@ -6,7 +6,7 @@ import NavbarSpacer from './components/NavbarSpacer';
 import { BrowserTracing } from '@sentry/tracing';
 
 import Landing from './routes/Landing';
-import 'antd/dist/antd.css';
+import 'antd/dist/antd.less';
 import * as Sentry from '@sentry/react';
 
 Sentry.init({

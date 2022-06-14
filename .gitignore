@@ -29,5 +29,4 @@ yarn-debug.log*
 yarn-error.log*
 
 .env
-craco.config.js
 firebase.js
